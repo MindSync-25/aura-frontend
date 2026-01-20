@@ -7,8 +7,7 @@ export const UserSchema = z.object({
   username: z.string(),
   avatar: z.string().optional(),
   bio: z.string().optional(),
-  followersCount: z.number(),
-  followingCount: z.number(),
+  createdAt: z.string(),
 });
 
 export type User = z.infer<typeof UserSchema>;
@@ -30,21 +29,20 @@ export const EchoCountsSchema = z.object({
 
 export const MomentSchema = z.object({
   id: z.string(),
-  userId: z.string(),
-  user: UserSchema,
+  author: UserSchema,
   content: z.string(),
-  images: z.array(MomentImageSchema).optional(),
-  interest: z.string().optional(),
+  images: z.array(z.string()).optional(),
+  interest: z.object({ id: z.string(), name: z.string(), icon: z.string().optional() }).optional(),
   location: z.string().optional(),
-  echoCounts: EchoCountsSchema,
+  echoCount: z.number(),
   commentCount: z.number(),
-  isBookmarked: z.boolean(),
-  userEcho: z.enum(['like', 'insightful', 'lol', 'wow']).optional(),
+  userEcho: z.enum(['like', 'love', 'fire', 'wow']).optional(),
+  privacy: z.enum(['public', 'followers']),
   createdAt: z.string(),
 });
 
 export type Moment = z.infer<typeof MomentSchema>;
-export type EchoType = 'like' | 'insightful' | 'lol' | 'wow';
+export type EchoType = 'like' | 'love' | 'fire' | 'wow';
 
 // Feed schemas
 export const FeedResponseSchema = z.object({
@@ -66,8 +64,9 @@ export const PulsePromptSchema = z.object({
 export const PulseSchema = z.object({
   id: z.string(),
   title: z.string(),
-  topic: z.string(),
-  interest: z.string(),
+  description: z.string().optional(),
+  interest: z.object({ id: z.string(), name: z.string(), icon: z.string().optional() }),
+  hostId: z.string(),
   participantCount: z.number(),
   status: z.enum(['live', 'upcoming', 'ended']),
   startTime: z.string(),
@@ -81,10 +80,11 @@ export type PulsePrompt = z.infer<typeof PulsePromptSchema>;
 // Chat schemas
 export const MessageSchema = z.object({
   id: z.string(),
+  chatId: z.string(),
   senderId: z.string(),
   content: z.string(),
   createdAt: z.string(),
-  isRead: z.boolean(),
+  isRead: z.boolean().optional(),
 });
 
 export const ConversationSchema = z.object({

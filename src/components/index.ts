@@ -2,3 +2,4 @@ export { Text, LargeTitle, Title1, Title2, Title3, Headline, Body, Callout, Subh
 export { Button } from './Button';
 export { Card } from './Card';
 export { Spacer } from './Spacer';
+export { SegmentedControl } from './SegmentedControl';

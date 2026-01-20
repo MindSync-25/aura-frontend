@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { Body, Callout, Caption1, Spacer, Card } from '@/components';
-import { spacing, radius, shadows } from '@/theme';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Body, Caption1, Spacer } from '@/components';
+import { spacing, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useTheme';
 import { Moment, EchoType } from '@/api/schemas';
 import { useEchoMoment, useRemoveEcho } from '@/api/hooks';
@@ -10,6 +10,20 @@ import { useTranslation } from 'react-i18next';
 
 interface MomentCardProps {
   moment: Moment;
+}
+
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
 }
 
 export function MomentCard({ moment }: MomentCardProps) {
@@ -26,34 +40,37 @@ export function MomentCard({ moment }: MomentCardProps) {
     }
   };
 
-  const echoButtons: { type: EchoType; label: string; color: string }[] = [
-    { type: 'like', label: t('moments.like'), color: colors.echo.like },
-    { type: 'insightful', label: t('moments.insightful'), color: colors.echo.insightful },
-    { type: 'lol', label: t('moments.lol'), color: colors.echo.lol },
-    { type: 'wow', label: t('moments.wow'), color: colors.echo.wow },
+  const echoButtons: { type: EchoType; emoji: string; label: string }[] = [
+    { type: 'like', emoji: '👍', label: 'Like' },
+    { type: 'love', emoji: '❤️', label: 'Love' },
+    { type: 'fire', emoji: '🔥', label: 'Fire' },
+    { type: 'wow', emoji: '😮', label: 'Wow' },
   ];
 
   return (
-    <Card variant="default" padding="base" style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface }]}>
       {/* User header */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <View style={[styles.avatar, { backgroundColor: colors.accent.primaryMuted }]}>
-            {moment.user.avatar ? (
-              <ExpoImage source={{ uri: moment.user.avatar }} style={styles.avatarImage} />
+            {moment.author.avatar ? (
+              <ExpoImage source={{ uri: moment.author.avatar }} style={styles.avatarImage} />
             ) : (
-              <Body>{moment.user.name[0].toUpperCase()}</Body>
+              <Body>{moment.author.name[0].toUpperCase()}</Body>
             )}
           </View>
-          <View>
-            <Body style={{ fontWeight: '600' }}>{moment.user.name}</Body>
-            <Caption1 color="tertiary">@{moment.user.username}</Caption1>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+              <Body style={{ fontWeight: '600' }}>{moment.author.name}</Body>
+              <Caption1 color="tertiary">· {formatTimeAgo(moment.createdAt)}</Caption1>
+            </View>
+            <Caption1 color="secondary">@{moment.author.username}</Caption1>
           </View>
         </View>
         {moment.interest && (
           <View style={[styles.interestChip, { backgroundColor: colors.accent.primaryMuted }]}>
             <Caption1 style={{ color: colors.accent.primary, fontWeight: '600' }}>
-              {moment.interest}
+              {moment.interest.icon && `${moment.interest.icon} `}{moment.interest.name}
             </Caption1>
           </View>
         )}
@@ -64,6 +81,14 @@ export function MomentCard({ moment }: MomentCardProps) {
       {/* Content */}
       <Body>{moment.content}</Body>
 
+      {/* Location */}
+      {moment.location && (
+        <>
+          <Spacer size="sm" />
+          <Caption1 color="tertiary">📍 {moment.location}</Caption1>
+        </>
+      )}
+
       {/* Images */}
       {moment.images && moment.images.length > 0 && (
         <>
@@ -71,18 +96,15 @@ export function MomentCard({ moment }: MomentCardProps) {
           <View style={styles.imagesContainer}>
             {moment.images.slice(0, 2).map((image, index) => (
               <View
-                key={image.id}
+                key={index}
                 style={[
                   styles.imageWrapper,
                   moment.images!.length === 1 ? styles.singleImage : styles.multipleImages,
                 ]}
               >
                 <ExpoImage
-                  source={{ uri: image.url }}
-                  style={[
-                    styles.image,
-                    { borderRadius: radius.md },
-                  ]}
+                  source={{ uri: image }}
+                  style={[styles.image, { borderRadius: radius.md }]}
                   contentFit="cover"
                 />
               </View>
@@ -95,8 +117,7 @@ export function MomentCard({ moment }: MomentCardProps) {
 
       {/* Echo buttons */}
       <View style={styles.echoContainer}>
-        {echoButtons.map(({ type, label, color }) => {
-          const count = moment.echoCounts[type];
+        {echoButtons.map(({ type, emoji, label }) => {
           const isActive = moment.userEcho === type;
           
           return (
@@ -105,26 +126,18 @@ export function MomentCard({ moment }: MomentCardProps) {
               style={[
                 styles.echoButton,
                 {
-                  backgroundColor: isActive ? color + '20' : colors.surface,
-                  borderColor: isActive ? color : colors.border,
+                  backgroundColor: isActive ? colors.accent.primaryMuted : 'transparent',
                 },
               ]}
               onPress={() => handleEcho(type)}
               activeOpacity={0.7}
             >
-              <Caption1
-                style={{
-                  color: isActive ? color : colors.text.secondary,
-                  fontWeight: isActive ? '600' : '400',
-                }}
-              >
-                {label}
-              </Caption1>
-              {count > 0 && (
+              <Body style={{ fontSize: 18 }}>{emoji}</Body>
+              {isActive && (
                 <>
                   <Spacer size="xs" horizontal />
-                  <Caption1 style={{ color: isActive ? color : colors.text.tertiary }}>
-                    {count}
+                  <Caption1 style={{ color: colors.accent.primary, fontWeight: '600' }}>
+                    {label}
                   </Caption1>
                 </>
               )}
@@ -136,44 +149,49 @@ export function MomentCard({ moment }: MomentCardProps) {
       <Spacer size="sm" />
 
       {/* Footer actions */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { borderTopColor: colors.border }]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
+          <TouchableOpacity style={styles.footerButton}>
+            <Caption1 color="secondary">
+              {moment.echoCount > 0 && `${moment.echoCount} `}echoes
+            </Caption1>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.footerButton}>
+            <Caption1 color="secondary">
+              {moment.commentCount > 0 && `${moment.commentCount} `}comments
+            </Caption1>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={styles.footerButton}>
-          <Caption1 color="secondary">{t('moments.comment')}</Caption1>
-          {moment.commentCount > 0 && (
-            <>
-              <Spacer size="xs" horizontal />
-              <Caption1 color="tertiary">{moment.commentCount}</Caption1>
-            </>
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Caption1 color="secondary">
-            {moment.isBookmarked ? '★' : '☆'} {t('moments.bookmark')}
-          </Caption1>
+          <Caption1 color="secondary">share</Caption1>
         </TouchableOpacity>
       </View>
-    </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     marginBottom: spacing.md,
+    marginHorizontal: spacing.lg,
+    padding: spacing.base,
+    borderRadius: radius.lg,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: spacing.sm,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginRight: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -186,6 +204,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
+    marginLeft: spacing.sm,
   },
   imagesContainer: {
     flexDirection: 'row',
@@ -209,8 +228,7 @@ const styles = StyleSheet.create({
   },
   echoContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   echoButton: {
     flexDirection: 'row',
@@ -218,12 +236,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radius.full,
-    borderWidth: 1,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
   },
   footerButton: {
     flexDirection: 'row',

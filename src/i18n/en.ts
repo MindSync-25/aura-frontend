@@ -8,12 +8,14 @@ export default {
     interests: {
       title: 'What interests you?',
       subtitle: 'Pick 3-8 interests to personalize your feed',
+      selectionCount: '{{count}}/{{max}} selected',
       continue: 'Continue',
       skip: 'Skip for now',
     },
     location: {
       title: 'Where are you from?',
       subtitle: 'Help us show you local content',
+      description: 'Location helps us show you relevant local Pulses and Moments from your area',
       enableLocation: 'Enable Location',
       selectCity: 'Select City',
       skip: 'Skip',
@@ -24,27 +26,39 @@ export default {
   tabs: {
     home: 'Home',
     discover: 'Discover',
-    create: 'Create',
+    moments: 'Moments',
     chats: 'Chats',
     profile: 'Profile',
   },
 
   // Home
   home: {
+    goodMorning: 'Good Morning',
+    goodAfternoon: 'Good Afternoon',
+    goodEvening: 'Good Evening',
+    explorePulses: 'Explore Today\'s Pulses',
+    todaysFocus: 'Today\'s Focus',
+    todaysPoll: 'Today\'s Poll',
+    vote: 'Vote',
+    join: 'Join',
+    seeAll: 'See All',
+    more: 'More',
+    headerMeta: '{{day}} • {{location}} • {{weather}}',
+    locationPlaceholder: 'Jersey City',
+    weatherPlaceholder: 'Rainy',
+    trendingInterests: 'Trending in Your Interests',
     liveNow: 'Live Now',
     feedEmpty: 'No moments yet',
-    feedEmptySubtitle: 'Follow some interests to see content',
+    feedEmptySubtitle: 'Follow interests to see moments',
     pullToRefresh: 'Pull to refresh',
   },
 
   // Discover
   discover: {
-    search: 'Search topics and people...',
+    search: 'Search topics, people, pulses...',
     trending: 'Trending',
-    pulses: 'Pulses',
     liveNow: 'Live Now',
     upcoming: 'Upcoming',
-    localSection: 'Local',
     interestsTitle: 'Your Interests',
     editInterests: 'Edit',
   },
@@ -52,9 +66,12 @@ export default {
   // Pulse
   pulse: {
     participants: '{{count}} participating',
-    join: 'Join Pulse',
+    join: 'Join',
     leave: 'Leave',
-    ended: 'Pulse Ended',
+    ended: 'This pulse has ended',
+    statusLive: 'LIVE',
+    statusUpcoming: 'UPCOMING',
+    statusEnded: 'ENDED',
     seeRelated: 'See related moments',
     vote: 'Vote',
     respond: 'Respond',
@@ -62,14 +79,14 @@ export default {
 
   // Create
   create: {
-    title: 'Drop a Moment',
+    title: 'Create Moment',
     placeholder: 'What\'s on your mind?',
-    addImage: 'Add Image',
-    tagInterest: 'Tag Interest',
-    location: 'Add Location',
+    addImage: 'Add image',
+    tagInterest: 'Tag interest',
+    location: 'Add location',
     privacy: 'Privacy',
     public: 'Public',
-    followers: 'Followers',
+    followers: 'Followers only',
     post: 'Post',
     cancel: 'Cancel',
   },
@@ -77,19 +94,19 @@ export default {
   // Chats
   chats: {
     title: 'Chats',
-    newChat: 'New Chat',
+    newChat: 'New chat',
     typeMessage: 'Type a message...',
     send: 'Send',
-    empty: 'No conversations yet',
+    empty: 'No chats yet',
     emptySubtitle: 'Start chatting with people you connect with',
-    notEligible: 'You can only chat with mutual followers or people you\'ve interacted with in Pulses',
+    notEligible: 'You can chat with mutual followers or people you\'ve met in pulses',
   },
 
   // Profile
   profile: {
-    moments: 'Moments',
-    pulses: 'Pulses',
-    editProfile: 'Edit Profile',
+    moments: 'moments',
+    pulses: 'pulses',
+    editProfile: 'Edit profile',
     settings: 'Settings',
   },
 
@@ -98,24 +115,25 @@ export default {
     title: 'Settings',
     language: 'Language',
     notifications: 'Notifications',
-    location: 'Location Services',
+    location: 'Location',
     privacy: 'Privacy',
-    about: 'About',
-    logout: 'Log Out',
-    enableNotifications: 'Enable Notifications',
-    enableLocation: 'Enable Location',
+    about: 'About Aura',
+    logout: 'Log out',
+    enableNotifications: 'Enable notifications',
+    enableLocation: 'Enable location',
   },
 
-  // Moments
+  // Echoes & Actions (keeping simple, natural terms)
   moments: {
     like: 'Like',
-    insightful: 'Insightful',
-    lol: 'Lol',
+    love: 'Love',
+    fire: 'Fire',
     wow: 'Wow',
-    comment: 'Comment',
-    bookmark: 'Bookmark',
-    share: 'Share',
-    comments: '{{count}} comments',
+    comment: 'comment',
+    bookmark: 'bookmark',
+    share: 'share',
+    echoes: 'echoes',
+    comments: 'comments',
   },
 
   // Assistant

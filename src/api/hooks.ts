@@ -22,10 +22,24 @@ import {
 // Feed hooks
 export function useFeed() {
   return useInfiniteQuery({
-    queryKey: ['feed'],
+    queryKey: ['feed', 'forYou'],
     queryFn: async ({ pageParam }) => {
       const response = await apiClient.get('/moments/feed', {
-        params: { cursor: pageParam },
+        params: { cursor: pageParam, type: 'forYou' },
+      });
+      return FeedResponseSchema.parse(response.data);
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: undefined as string | undefined,
+  });
+}
+
+export function useConnectionsFeed() {
+  return useInfiniteQuery({
+    queryKey: ['feed', 'connections'],
+    queryFn: async ({ pageParam }) => {
+      const response = await apiClient.get('/moments/feed', {
+        params: { cursor: pageParam, type: 'connections' },
       });
       return FeedResponseSchema.parse(response.data);
     },
