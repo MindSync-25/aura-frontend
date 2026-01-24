@@ -13,11 +13,11 @@ import { Body, Caption1, Spacer } from '@/components';
 import { spacing } from '@/theme';
 import { useLivePulses } from '@/api/hooks';
 import { PulseCard } from '@/components/cards/PulseCard';
+import { AndroidGlassCard } from '../../components/surfaces/AndroidGlassCard';
 import { useTranslation } from 'react-i18next';
 import { FlashList } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 
 const H_PADDING = 20;
@@ -25,6 +25,7 @@ const GAP_AFTER_HEADER = 6;
 const GAP_BELOW_SECTION_TITLE = 8;
 const GAP_MAJOR_SECTION = 16;
 const PULSE_TILE_GAP = 14;
+const TOP_BG_HEIGHT = 520;
 const TRENDING_THUMB_SIZE = 44;
 const TRENDING_THUMB_GAP = 12;
 
@@ -88,8 +89,8 @@ export function HomeScreen() {
   // Mock data for Today's Focus - rotate between types
   const todaysFocus = {
     type: 'poll', // 'poll' | 'discussion' | 'question'
-    title: "What's your preferred workout time?",
-    options: ['Morning', 'Afternoon', 'Evening'],
+    title: 'Do you prefer working late or early?',
+    options: ['Late night', 'Early morning'],
   };
 
   const pulseTileWidth = useMemo(() => Math.round(screenWidth * 0.8), [screenWidth]);
@@ -98,20 +99,31 @@ export function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Atmospheric background layer */}
+      {/* Cloudy sky backdrop (reference-style) */}
+      <Image
+        pointerEvents="none"
+        source={{ uri: 'https://picsum.photos/seed/aura-sky/1200/900' }}
+        style={styles.topSky}
+        contentFit="cover"
+        transition={120}
+      />
+
+      {/* Android-first premium atmosphere */}
       <LinearGradient
-        colors={['#E9ECFF', '#F7F7F7']}
+        pointerEvents="none"
+        colors={['#E9ECFF', '#F6F7FF', '#FFFFFF']}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 0.2, y: 1 }}
         style={styles.topAtmosphere}
       />
-
-
-      {/* Optional: very subtle “mist” overlay */}
-      <View pointerEvents="none" style={styles.mistOverlay} />
-
-      {/* Top vignette for subtle depth */}
-      <View pointerEvents="none" style={styles.topVignette} />
+      <LinearGradient
+        pointerEvents="none"
+        colors={['rgba(79,93,255,0.14)', 'rgba(79,93,255,0.00)']}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.2, y: 1 }}
+        style={styles.topGlow}
+      />
+      <View pointerEvents="none" style={styles.mist} />
 
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <ScrollView
@@ -120,30 +132,39 @@ export function HomeScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <Text style={styles.appName}>Aura</Text>
-              <Caption1 style={styles.greeting}>
-                {t('home.headerMeta', {
-                  day: getDayLabel(),
-                  location: t('home.locationPlaceholder'),
-                  weather: t('home.weatherPlaceholder'),
-                })}
-              </Caption1>
-            </View>
-            <View style={styles.headerRight}>
-              <TouchableOpacity style={styles.iconButton} accessibilityRole="button">
-                <Ionicons name="search-outline" size={20} color="#6B6B6B" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} accessibilityRole="button">
-                <View style={styles.notificationWrap}>
-                  <Ionicons name="notifications-outline" size={20} color="#6B6B6B" />
-                  <View style={styles.notificationDot} />
+            <TouchableOpacity style={styles.iconButton} accessibilityRole="button">
+              <Ionicons name="menu" size={22} color="#6B6B6B" />
+            </TouchableOpacity>
+
+            <Text style={styles.appName}>Aura</Text>
+
+            <View style={{ flex: 1 }} />
+
+            <TouchableOpacity style={styles.iconButton} accessibilityRole="button">
+              <Ionicons name="search-outline" size={21} color="#6B6B6B" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} accessibilityRole="button">
+              <View style={styles.notificationWrap}>
+                <Ionicons name="notifications-outline" size={21} color="#6B6B6B" />
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>2</Text>
                 </View>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.avatarButton} accessibilityRole="button">
-                <Ionicons name="person-outline" size={20} color="#6B6B6B" />
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.avatarButton} accessibilityRole="button">
+              <Image
+                source={{ uri: 'https://i.pravatar.cc/100?img=12' }}
+                style={styles.avatarImage}
+                contentFit="cover"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.headerMetaRow}>
+            <Text style={styles.headerMetaText}>{getDayLabel()} • </Text>
+            <Text style={styles.headerMetaText}>{t('home.locationPlaceholder')} • </Text>
+            <Ionicons name="rainy-outline" size={14} color="#8A8FA3" />
+            <Text style={styles.headerMetaText}> {t('home.weatherPlaceholder')}</Text>
           </View>
 
           <View style={{ height: GAP_AFTER_HEADER }} />
@@ -181,115 +202,62 @@ export function HomeScreen() {
           )}
 
           {/* Today’s Poll - true glass card */}
-          <View style={styles.pollOuter}>
-            <LinearGradient
-              pointerEvents="none"
-              colors={['rgba(79,93,255,0.16)', 'rgba(255,255,255,0.02)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.pollBackdrop}
-            />
-
-            <View
-              style={styles.pollGlass}
-              needsOffscreenAlphaCompositing
-              renderToHardwareTextureAndroid
-            >
-              <BlurView
-                intensity={Platform.OS === 'android' ? 65 : 28}
-                tint="light"
-                experimentalBlurMethod={
-                  Platform.OS === 'android' ? 'dimezisBlurView' : undefined
-                }
-                style={StyleSheet.absoluteFillObject}
-              />
-              <View pointerEvents="none" style={styles.glassHighlight} />
-
-              <View
-                style={styles.pollContent}
-                needsOffscreenAlphaCompositing
-                renderToHardwareTextureAndroid
-              >
-                <View style={styles.pollHeaderRow}>
-                  <Text style={styles.pollHeaderTitle}>{t('home.todaysPoll')}</Text>
-                  <TouchableOpacity>
-                    <Text style={styles.pollAction}>{t('home.vote')}</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={styles.pollQuestion}>{todaysFocus.title}</Text>
-
-                <View
-                  style={styles.pollPillsRow}
-                  needsOffscreenAlphaCompositing
-                  renderToHardwareTextureAndroid
-                >
-                  <TouchableOpacity
-                    style={[styles.pollPill, selectedOptionIndex === 0 && styles.pollPillSelected]}
-                    activeOpacity={0.9}
-                    onPress={() => setSelectedOptionIndex(0)}
-                  >
-                    <View
-                      style={styles.pollPillInner}
-                      needsOffscreenAlphaCompositing
-                      renderToHardwareTextureAndroid
-                    >
-                      <Text
-                        style={[
-                          styles.pollPillText,
-                          selectedOptionIndex === 0 && styles.pollPillTextSelected,
-                        ]}
-                      >
-                        {todaysFocus.options[0]}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.pollPill, selectedOptionIndex === 1 && styles.pollPillSelected]}
-                    activeOpacity={0.9}
-                    onPress={() => setSelectedOptionIndex(1)}
-                  >
-                    <View
-                      style={styles.pollPillInner}
-                      needsOffscreenAlphaCompositing
-                      renderToHardwareTextureAndroid
-                    >
-                      <Text
-                        style={[
-                          styles.pollPillText,
-                          selectedOptionIndex === 1 && styles.pollPillTextSelected,
-                        ]}
-                      >
-                        {todaysFocus.options[1]}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.pollPill, selectedOptionIndex === 2 && styles.pollPillSelected]}
-                    activeOpacity={0.9}
-                    onPress={() => setSelectedOptionIndex(2)}
-                  >
-                    <View
-                      style={styles.pollPillInner}
-                      needsOffscreenAlphaCompositing
-                      renderToHardwareTextureAndroid
-                    >
-                      <Text
-                        style={[
-                          styles.pollPillText,
-                          selectedOptionIndex === 2 && styles.pollPillTextSelected,
-                        ]}
-                      >
-                        {todaysFocus.options[2] ?? `${t('home.more')}…`}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
+          <AndroidGlassCard style={styles.pollOuter} contentStyle={styles.pollContent} radius={22}>
+            <View style={styles.pollHeaderRow}>
+              <Text style={styles.pollHeaderTitle}>{t('home.todaysPoll')}</Text>
+              <TouchableOpacity accessibilityRole="button" activeOpacity={0.8}>
+                <Text style={styles.pollHeaderAction}>{t('home.vote')} ›</Text>
+              </TouchableOpacity>
             </View>
-          </View>
+
+            <Text style={styles.pollQuestion}>{todaysFocus.title}</Text>
+
+            <View style={styles.pollPillsRow}>
+              <TouchableOpacity
+                style={[styles.pollPill, selectedOptionIndex === 0 && styles.pollPillSelected]}
+                activeOpacity={0.9}
+                onPress={() => setSelectedOptionIndex(0)}
+              >
+                <View style={styles.pollPillContent}>
+                  <Ionicons
+                    name="moon-outline"
+                    size={16}
+                    color={selectedOptionIndex === 0 ? '#4F5DFF' : '#5F6B8A'}
+                  />
+                  <Text
+                    style={[
+                      styles.pollPillText,
+                      selectedOptionIndex === 0 && styles.pollPillTextSelected,
+                    ]}
+                  >
+                    {todaysFocus.options[0]}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.pollPill, selectedOptionIndex === 1 && styles.pollPillSelected]}
+                activeOpacity={0.9}
+                onPress={() => setSelectedOptionIndex(1)}
+              >
+                <View style={styles.pollPillContent}>
+                  <Ionicons
+                    name="sunny-outline"
+                    size={16}
+                    color={selectedOptionIndex === 1 ? '#4F5DFF' : '#D39B2A'}
+                  />
+                  <Text
+                    style={[
+                      styles.pollPillText,
+                      selectedOptionIndex === 1 && styles.pollPillTextSelected,
+                    ]}
+                  >
+                    {todaysFocus.options[1]}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </AndroidGlassCard>
 
           <View style={{ height: GAP_MAJOR_SECTION }} />
 
@@ -338,54 +306,63 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F7',
+    backgroundColor: '#F6F7FF',
   },
-  mistOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  topVignette: {
+  topSky: {
     position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
-    height: 220,
-    backgroundColor: 'rgba(0,0,0,0.035)',
+    height: TOP_BG_HEIGHT,
+    opacity: 0.18,
+  },
+  mist: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   scrollContent: {
     paddingBottom: spacing['4xl'],
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: H_PADDING,
     paddingTop: spacing.sm,
   },
-  headerLeft: {
-    flex: 1,
-  },
   appName: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: Platform.OS === 'android' ? '600' : '500',
     color: '#111111',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
+    fontFamily: Platform.OS === 'android' ? 'serif' : 'serif',
   },
-  greeting: {
-    fontSize: 11,
-    color: '#9A9A9A',
-    marginTop: 4,
-  },
-  headerRight: {
+  headerMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    paddingHorizontal: H_PADDING,
+    marginTop: 6,
+  },
+  headerMetaText: {
+    fontSize: 13,
+    color: '#8A8FA3',
+    fontWeight: '500',
   },
   iconButton: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 14,
+
+    backgroundColor: 'rgba(255,255,255,0.58)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.42)',
+
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 1,
   },
   avatarButton: {
     width: 44,
@@ -393,9 +370,14 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#EDEDED',
     borderWidth: 1,
-    borderColor: '#EDEDED',
-    backgroundColor: 'transparent',
+    borderColor: 'rgba(255,255,255,0.55)',
+  },
+  avatarImage: {
+    width: 44,
+    height: 44,
   },
   notificationWrap: {
     width: 44,
@@ -403,16 +385,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  notificationDot: {
+  notificationBadge: {
     position: 'absolute',
-    top: 14,
-    right: 14,
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: '#4F5DFF',
+    top: 10,
+    right: 10,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: '#FF3B30',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#F7F7F7',
+    borderColor: 'rgba(255,255,255,0.85)',
+  },
+  notificationBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -424,7 +414,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#111111',
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
   },
   sectionAction: {
     fontSize: 12,
@@ -490,59 +480,36 @@ const styles = StyleSheet.create({
   },
   pollOuter: {
     marginHorizontal: H_PADDING,
-    borderRadius: 22,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 22,
-    elevation: 3,
-    position: 'relative',
-    zIndex: 2,
-  },
-  pollBackdrop: {
-    position: 'absolute',
-    left: -10,
-    right: -10,
-    top: -10,
-    bottom: -10,
-    borderRadius: 24,
-    zIndex: 0,
-  },
-  pollGlass: {
-    borderRadius: 22,
-    overflow: 'hidden',
-
-    // airy frosted glass
-    backgroundColor: 'rgba(255,255,255,0.38)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.30)',
+    // Shadow handled by AndroidGlassCard (keep rhythm-only here)
   },
   pollContent: {
     paddingVertical: 16,
     paddingHorizontal: 16,
   },
-
   pollHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   pollHeaderTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#111111',
+    letterSpacing: -0.2,
   },
-  pollAction: {
+  pollHeaderAction: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#4F5DFF',
+    letterSpacing: -0.1,
   },
   pollQuestion: {
     marginTop: 10,
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: Platform.OS === 'android' ? '600' : '700',
     color: '#111111',
     letterSpacing: -0.2,
+    lineHeight: 24,
   },
   pollPillsRow: {
     marginTop: 14,
@@ -551,48 +518,42 @@ const styles = StyleSheet.create({
   },
   pollPill: {
     flex: 1,
-    height: 40,
-    borderRadius: 14,
+    height: 42,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
 
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    backgroundColor: 'rgba(255,255,255,0.64)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.26)',
+    borderColor: 'rgba(255,255,255,0.32)',
+
+    overflow: 'hidden',
 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.06,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 1,
+  },
+  pollPillContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   pollPillSelected: {
-    backgroundColor: 'rgba(255,255,255,0.82)',
-    borderColor: 'rgba(79,93,255,0.60)',
-    shadowOpacity: 0.08,
-    elevation: 3,
+    backgroundColor: 'rgba(79,93,255,0.10)',
+    borderColor: 'rgba(79,93,255,0.52)',
   },
   pollPillText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#111111',
-    backgroundColor: 'transparent',
     textAlign: 'center',
-    paddingHorizontal: 0,
-    paddingVertical: 0,
     includeFontPadding: false,
     textAlignVertical: 'center',
-    opacity: 0.99,
   },
   pollPillTextSelected: {
-    color: '#111111',
-  },
-  pollPillInner: {
-    flex: 1,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
+    color: '#2733FF',
   },
   trendingRow: {
     paddingHorizontal: H_PADDING,
@@ -644,19 +605,18 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   topAtmosphere: {
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  top: 0,
-  height: 420, // only top area gets “mood”
-},
-glassHighlight: {
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  top: 0,
-  height: 60,
-  backgroundColor: 'rgba(255,255,255,0.14)',
-},
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: TOP_BG_HEIGHT,
+  },
+  topGlow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: 260,
+  },
 
 });
